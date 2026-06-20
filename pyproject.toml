@@ -1,0 +1,173 @@
+[build-system]
+requires = ["setuptools>=69.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hybrid-pki-lab"
+version = "1.0.0"
+description = "Classical and Post-Quantum Hybrid PKI in Python"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+authors = [
+    { name = "Chokri" }
+]
+
+keywords = [
+    "pki",
+    "cryptography",
+    "cybersecurity",
+    "post-quantum-cryptography",
+    "pqc",
+    "x509",
+    "certificates",
+    "ml-kem",
+    "ml-dsa",
+    "hybrid-pki"
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Security",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "cryptography>=42.0.0",
+    "pyOpenSSL>=24.0.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.6.0",
+    "typer>=0.9.0",
+    "rich>=13.7.0",
+    "python-dotenv>=1.0.0",
+    "orjson>=3.9.0",
+]
+
+[project.optional-dependencies]
+pqc = [
+    "liboqs-python>=0.10.0",
+]
+
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "black>=24.0.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+    "bandit>=1.7.7",
+    "pip-audit>=2.7.0",
+    "pre-commit>=3.6.0",
+]
+
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+]
+
+benchmark = [
+    "pandas>=2.2.0",
+    "matplotlib>=3.8.0",
+]
+
+all = [
+    "liboqs-python>=0.10.0",
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "black>=24.0.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+    "bandit>=1.7.7",
+    "pip-audit>=2.7.0",
+    "pre-commit>=3.6.0",
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+    "pandas>=2.2.0",
+    "matplotlib>=3.8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-username/hybrid-pki-lab"
+Repository = "https://github.com/your-username/hybrid-pki-lab"
+Documentation = "https://github.com/your-username/hybrid-pki-lab/tree/main/docs"
+Issues = "https://github.com/your-username/hybrid-pki-lab/issues"
+
+[project.scripts]
+hybrid-pki = "hybrid_pki.cli:app"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ["py311", "py312"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+src = ["src", "tests", "examples", "benchmarks"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "B",
+    "UP",
+    "N",
+    "S",
+]
+ignore = [
+    "S101",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+"examples/*" = ["S101"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_unused_configs = true
+warn_return_any = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+mypy_path = "src"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = [
+    "test_*.py",
+]
+python_classes = [
+    "Test*",
+]
+python_functions = [
+    "test_*",
+]
+addopts = "-v --cov=hybrid_pki --cov-report=term-missing --cov-report=html"
+
+[tool.coverage.run]
+branch = true
+source = ["src/hybrid_pki"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+skips = ["B101"]
