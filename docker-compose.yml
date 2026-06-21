@@ -1,0 +1,48 @@
+services:
+  hybrid-pki-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hybrid-pki-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./certs:/app/certs
+      - ./logs:/app/logs
+      - ./docs:/app/docs
+    environment:
+      APP_NAME: "Hybrid-PKI-Lab"
+      APP_ENV: "development"
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      PKI_STORAGE_PATH: "/app/certs"
+      LOG_LEVEL: "INFO"
+    command: uvicorn hybrid_pki.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  hybrid-pki-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hybrid-pki-tests
+    volumes:
+      - .:/app
+    environment:
+      APP_ENV: "test"
+      PKI_STORAGE_PATH: "/app/certs"
+    command: pytest -v --cov=hybrid_pki --cov-report=term-missing
+    profiles:
+      - test
+
+  hybrid-pki-shell:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hybrid-pki-shell
+    volumes:
+      - .:/app
+    environment:
+      APP_ENV: "development"
+      PKI_STORAGE_PATH: "/app/certs"
+    entrypoint: /bin/bash
+    profiles:
+      - shell

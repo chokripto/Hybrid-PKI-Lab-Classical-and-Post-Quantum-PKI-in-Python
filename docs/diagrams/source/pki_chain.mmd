@@ -1,0 +1,10 @@
+flowchart TB
+    Root["Root CA<br/>Self-Signed Certificate<br/>Trust Anchor"]
+    Intermediate["Intermediate CA<br/>Signed by Root CA"]
+    Server["Server Certificate<br/>Signed by Intermediate CA"]
+    Client["Client / Browser / Validator<br/>Trust Store contains Root CA"]
+
+    Root -->|signs| Intermediate
+    Intermediate -->|signs| Server
+    Client -->|trusts| Root
+    Client -->|validates chain| Server

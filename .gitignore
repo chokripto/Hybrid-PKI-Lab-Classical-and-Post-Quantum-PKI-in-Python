@@ -1,0 +1,54 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# Test and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+logs/*.log
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Certificates and private keys
+certs/**/*.pem
+certs/**/*.key
+certs/**/*.bin
+certs/**/*.der
+certs/**/*.json
+certs/**/*.crt
+certs/**/*.csr
+
+# Keep empty folders
+!certs/**/.gitkeep
+!logs/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db

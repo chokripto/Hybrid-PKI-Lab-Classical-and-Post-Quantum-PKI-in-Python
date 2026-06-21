@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Server->>Server: Generate X25519 key pair
+    Server->>Server: Generate ML-KEM key pair
+    Server-->>Client: Send X25519 public key
+    Server-->>Client: Send ML-KEM public key
+    Server-->>Client: Send hybrid certificate
+    Client->>Client: Validate hybrid certificate
+    Client->>Client: Generate X25519 ephemeral key pair
+    Client->>Client: Compute X25519 shared secret
+    Client->>Client: ML-KEM encapsulation
+    Client->>Client: Derive hybrid secret with HKDF
+    Client-->>Server: Send X25519 client public key
+    Client-->>Server: Send ML-KEM ciphertext
+    Server->>Server: Compute X25519 shared secret
+    Server->>Server: ML-KEM decapsulation
+    Server->>Server: Derive hybrid secret with HKDF
+    Client-->>Server: Secure communication using hybrid secret
