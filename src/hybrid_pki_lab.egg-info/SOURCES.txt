@@ -5,6 +5,12 @@ src/hybrid_pki/__init__.py
 src/hybrid_pki/cli.py
 src/hybrid_pki/config.py
 src/hybrid_pki/api/main.py
+src/hybrid_pki/classical/__init__.py
+src/hybrid_pki/classical/ca.py
+src/hybrid_pki/classical/certificate.py
+src/hybrid_pki/classical/chain_validation.py
+src/hybrid_pki/classical/keygen.py
+src/hybrid_pki/classical/revocation.py
 src/hybrid_pki_lab.egg-info/PKG-INFO
 src/hybrid_pki_lab.egg-info/SOURCES.txt
 src/hybrid_pki_lab.egg-info/dependency_links.txt

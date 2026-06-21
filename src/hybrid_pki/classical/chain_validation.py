@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import ec, ed25519, padding, rsa
@@ -14,7 +14,7 @@ def verify_certificate_time(certificate: x509.Certificate) -> bool:
     """
     Verify that the certificate is currently valid.
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     if now < certificate.not_valid_before_utc:
         raise CertificateValidationError("Certificate is not yet valid")

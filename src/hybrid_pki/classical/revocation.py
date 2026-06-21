@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from cryptography import x509
@@ -57,7 +57,7 @@ def revoke_certificate(
         "serial_number": serial_number,
         "subject": certificate.subject.rfc4514_string(),
         "issuer": certificate.issuer.rfc4514_string(),
-        "revocation_date": datetime.now(timezone.utc).isoformat(),
+        "revocation_date": datetime.now(UTC).isoformat(),
         "reason": reason,
     }
 
@@ -89,7 +89,7 @@ def create_crl(
     """
     Create a Certificate Revocation List signed by the issuer CA.
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     builder = (
         x509.CertificateRevocationListBuilder()

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from cryptography import x509
@@ -39,7 +39,7 @@ def create_root_ca_certificate(
         country=country,
     )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     certificate = (
         x509.CertificateBuilder()
@@ -98,7 +98,7 @@ def create_intermediate_ca_certificate(
         country=country,
     )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     certificate = (
         x509.CertificateBuilder()
@@ -164,7 +164,7 @@ def issue_server_certificate(
         country=country,
     )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     certificate = (
         x509.CertificateBuilder()
