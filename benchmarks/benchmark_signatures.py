@@ -1,1 +1,0 @@
-print("Benchmark signatures placeholder")
