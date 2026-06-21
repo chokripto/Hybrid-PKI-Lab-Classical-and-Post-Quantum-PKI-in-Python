@@ -1,0 +1,2 @@
+[console_scripts]
+hybrid-pki = hybrid_pki.cli:app
