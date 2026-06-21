@@ -1,0 +1,1 @@
+print("Benchmark handshake placeholder")
