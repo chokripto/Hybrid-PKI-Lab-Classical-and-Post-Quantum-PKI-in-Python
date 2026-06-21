@@ -1,0 +1,24 @@
+flowchart TB
+    Cert["Hybrid Certificate"]
+    Payload["Unsigned Payload<br/>Subject<br/>Issuer<br/>Serial Number<br/>Validity<br/>Extensions"]
+    ClassicalKey["Classical Public Key<br/>RSA / ECDSA / Ed25519"]
+    PQCKey["PQC Public Key<br/>ML-DSA Public Key"]
+    ClassicalSig["Classical Signature<br/>Signed by Classical CA Key"]
+    PQCSig["PQC Signature<br/>Signed by PQC CA Key"]
+    Policy["Validation Policy<br/>hybrid-strict"]
+    Validator["Hybrid Validator"]
+    ClassicalVerify["Verify Classical Signature"]
+    PQCVerify["Verify PQC Signature"]
+    Decision["Accept only if both signatures are valid"]
+
+    Cert --> Payload
+    Cert --> ClassicalKey
+    Cert --> PQCKey
+    Cert --> ClassicalSig
+    Cert --> PQCSig
+    Cert --> Policy
+    Cert --> Validator
+    Validator --> ClassicalVerify
+    Validator --> PQCVerify
+    ClassicalVerify --> Decision
+    PQCVerify --> Decision
