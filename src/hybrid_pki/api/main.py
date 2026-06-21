@@ -1,10 +1,14 @@
 from fastapi import FastAPI
 
+from hybrid_pki.api.routes_classical import router as classical_router
+
 app = FastAPI(
     title="Hybrid PKI Lab API",
     description="Classical and Post-Quantum Hybrid PKI API",
     version="1.0.0",
 )
+
+app.include_router(classical_router)
 
 
 @app.get("/")
@@ -13,16 +17,17 @@ def root():
         "project": "Hybrid PKI Lab",
         "status": "running",
         "message": "API is working successfully",
-        "features": [
+        "available_modules": [
             "Classical PKI",
             "Hybrid PKI",
             "Post-Quantum Cryptography",
-            "ML-KEM",
-            "ML-DSA",
         ],
+        "documentation": "/docs",
     }
 
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+    }
