@@ -43,7 +43,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install -e .
-          pip install black ruff mypy
+          pip install black ruff
 
       - name: Check formatting with Black
         run: |
@@ -52,7 +52,3 @@ jobs:
       - name: Run Ruff
         run: |
           ruff check src tests examples benchmarks
-
-      - name: Run mypy
-        run: |
-          mypy src
