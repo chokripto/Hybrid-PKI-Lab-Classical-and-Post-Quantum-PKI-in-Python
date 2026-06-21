@@ -1,0 +1,97 @@
+name: Security
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-security-${{ hashFiles('requirements.txt', 'pyproject.toml') }}
+          restore-keys: |
+            pip-${{ runner.os }}-security-
+
+      - name: Upgrade pip
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install security tools
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+          pip install bandit pip-audit
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r src -ll
+
+      - name: Run pip-audit
+        run: |
+          pip-audit
+
+      - name: Check for private keys accidentally committed
+        run: |
+          echo "Checking for sensitive private key files..."
+          if find . \
+            -type f \( \
+              -name "*private_key*.pem" -o \
+              -name "*.key" -o \
+              -name "*_pqc_private_key.bin" -o \
+              -name "id_rsa" -o \
+              -name "id_ed25519" \
+            \) \
+            ! -path "./venv/*" \
+            ! -path "./.venv/*" \
+            | grep .; then
+            echo "Sensitive key files were found in the repository."
+            exit 1
+          else
+            echo "No sensitive private key files found."
+          fi
+
+      - name: Check for environment files
+        run: |
+          echo "Checking for .env files..."
+          if find . \
+            -type f \( \
+              -name ".env" -o \
+              -name ".env.local" -o \
+              -name ".env.production" \
+            \) \
+            | grep .; then
+            echo "Environment files were found in the repository."
+            exit 1
+          else
+            echo "No environment files found."
+          fi
