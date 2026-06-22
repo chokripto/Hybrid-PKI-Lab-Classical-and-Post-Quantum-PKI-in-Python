@@ -5,6 +5,7 @@ src/hybrid_pki/__init__.py
 src/hybrid_pki/cli.py
 src/hybrid_pki/config.py
 src/hybrid_pki/api/main.py
+src/hybrid_pki/api/routes_classical.py
 src/hybrid_pki/classical/__init__.py
 src/hybrid_pki/classical/ca.py
 src/hybrid_pki/classical/certificate.py
