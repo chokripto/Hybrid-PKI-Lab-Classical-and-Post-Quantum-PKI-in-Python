@@ -6,7 +6,7 @@ from typing import Any
 
 class OQSUnavailableError(RuntimeError):
     """
-    Raised when liboqs-python is required but not installed.
+    Raised when liboqs-python is required but not correctly available.
     """
 
 
@@ -24,23 +24,25 @@ def import_oqs() -> Any:
     """
     Import oqs dynamically.
 
-    This avoids breaking the whole project when liboqs-python is not installed.
+    This avoids breaking the whole project when liboqs-python is not installed,
+    or when liboqs shared libraries cannot be loaded.
     """
     try:
         import oqs  # type: ignore[import-not-found]
 
         return oqs
 
-    except ImportError as exc:
+    except (ImportError, RuntimeError, OSError, SystemExit) as exc:
         raise OQSUnavailableError(
-            "liboqs-python is not installed or liboqs is not available. "
-            "Install liboqs and liboqs-python to use PQC features."
+            "liboqs-python is not installed correctly, or liboqs shared "
+            "libraries are not available. Install CMake, build liboqs as a "
+            "shared library, or use Docker/WSL for PQC features."
         ) from exc
 
 
 def is_oqs_available() -> bool:
     """
-    Return True if liboqs-python can be imported.
+    Return True if liboqs-python can be imported and loaded.
     """
     try:
         import_oqs()
