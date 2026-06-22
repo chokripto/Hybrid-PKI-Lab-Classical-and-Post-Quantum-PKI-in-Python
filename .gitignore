@@ -31,6 +31,9 @@ htmlcov/
 logs/*.log
 *.log
 
+benchmarks/results/*.json
+!benchmarks/results/.gitkeep
+
 # Environment files
 .env
 .env.local
