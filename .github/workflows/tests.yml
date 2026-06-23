@@ -65,10 +65,14 @@ jobs:
           python -c "from hybrid_pki.api.main import app; print(app.title)"
 
       - name: Run tests
+  	env:
+	   HYBRID_PKI_DISABLE_OQS: "1"
         run: |
           pytest -v
 
       - name: Run tests with coverage
+  	env:
+	    HYBRID_PKI_DISABLE_OQS: "1"
         run: |
           pytest -v --cov=hybrid_pki --cov-report=term-missing --cov-report=xml
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any
 
 
@@ -20,13 +22,17 @@ class OQSStatus:
     message: str
 
 
+@lru_cache(maxsize=1)
 def import_oqs() -> Any:
     """
-    Import oqs dynamically.
+    Import oqs dynamically and cache the result.
 
-    This avoids breaking the whole project when liboqs-python is not installed,
-    or when liboqs shared libraries cannot be loaded.
+    This prevents repeated slow import attempts when liboqs-python is broken,
+    missing, or disabled.
     """
+    if os.getenv("HYBRID_PKI_DISABLE_OQS", "").lower() in {"1", "true", "yes"}:
+        raise OQSUnavailableError("OQS support is disabled by HYBRID_PKI_DISABLE_OQS.")
+
     try:
         import oqs  # type: ignore[import-not-found]
 
@@ -35,11 +41,12 @@ def import_oqs() -> Any:
     except (ImportError, RuntimeError, OSError, SystemExit) as exc:
         raise OQSUnavailableError(
             "liboqs-python is not installed correctly, or liboqs shared "
-            "libraries are not available. Install CMake, build liboqs as a "
-            "shared library, or use Docker/WSL for PQC features."
+            "libraries are not available. Use Docker PQC mode for real "
+            "post-quantum cryptography features."
         ) from exc
 
 
+@lru_cache(maxsize=1)
 def is_oqs_available() -> bool:
     """
     Return True if liboqs-python can be imported and loaded.
@@ -51,6 +58,7 @@ def is_oqs_available() -> bool:
         return False
 
 
+@lru_cache(maxsize=1)
 def get_oqs_status() -> OQSStatus:
     """
     Return detailed status about liboqs-python availability.
@@ -73,3 +81,14 @@ def require_oqs() -> Any:
     Return oqs module or raise a clear error.
     """
     return import_oqs()
+
+
+def clear_oqs_cache() -> None:
+    """
+    Clear cached OQS availability checks.
+
+    Useful for tests.
+    """
+    import_oqs.cache_clear()
+    is_oqs_available.cache_clear()
+    get_oqs_status.cache_clear()
