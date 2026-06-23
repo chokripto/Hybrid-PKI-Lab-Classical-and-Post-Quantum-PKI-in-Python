@@ -52,6 +52,11 @@ certs/**/*.csr
 !certs/**/.gitkeep
 !logs/.gitkeep
 
+# Generated certificates and keys
+certs/*
+!certs/**/
+!certs/**/.gitkeep
+
 # OS
 .DS_Store
 Thumbs.db
