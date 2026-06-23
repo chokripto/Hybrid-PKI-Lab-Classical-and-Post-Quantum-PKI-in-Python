@@ -53,9 +53,7 @@ certs/**/*.csr
 !logs/.gitkeep
 
 # Generated certificates and keys
-certs/*
-!certs/**/
-!certs/**/.gitkeep
+certs/
 
 # OS
 .DS_Store
