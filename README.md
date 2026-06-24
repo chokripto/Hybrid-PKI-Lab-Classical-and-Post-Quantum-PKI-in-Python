@@ -1,5 +1,9 @@
 # Hybrid-PKI-Lab
 
+![Tests](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/tests.yml/badge.svg)
+![Lint](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/lint.yml/badge.svg)
+![Security](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/security.yml/badge.svg)
+
 **Hybrid-PKI-Lab** is an educational and experimental Python project for building, testing and comparing classical Public Key Infrastructure, PKI, Post-Quantum Cryptography, PQC, and Hybrid PKI combining classical cryptography and PQC.
 
 The project demonstrates how traditional PKI systems based on RSA, ECDSA, Ed25519 and X.509 certificates can evolve toward hybrid post-quantum architectures using algorithms such as ML-KEM and ML-DSA.
@@ -22,6 +26,27 @@ Recommended for real post-quantum cryptography experiments.
 ```
 
 ---
+
+## Project Status
+
+Hybrid-PKI-Lab is currently a stable educational and experimental lab.
+
+| Area | Status |
+|---|---|
+| Classical PKI | Complete |
+| PQC fallback | Complete |
+| Hybrid PKI core | Complete |
+| FastAPI API | Complete |
+| Docker PQC mode with liboqs | Complete |
+| Benchmarks | Complete |
+| GitHub Actions | Complete |
+| Documentation | Complete |
+| Test suite | Extended |
+| Production readiness | Not production-ready |
+
+The project is designed for education, research, experimentation and portfolio demonstration.
+
+It is not intended to be used as a production Certificate Authority.
 
 ### Standard Mode
 
