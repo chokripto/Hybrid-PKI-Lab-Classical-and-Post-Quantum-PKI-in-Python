@@ -6,6 +6,105 @@ The project demonstrates how traditional PKI systems based on RSA, ECDSA, Ed2551
 
 ---
 
+## Quick Start
+
+Hybrid-PKI-Lab can be used in two modes:
+
+```text
+Standard mode:
+No liboqs required.
+No Docker required.
+Recommended for normal development and GitHub Actions.
+
+Docker PQC mode:
+Uses liboqs inside Docker.
+Recommended for real post-quantum cryptography experiments.
+```
+
+---
+
+### Standard Mode
+
+Use this mode if you want to run the project quickly without installing native post-quantum cryptography dependencies.
+
+```powershell
+git clone https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python.git
+cd Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python
+
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
+
+$env:HYBRID_PKI_DISABLE_OQS="1"
+pytest -v
+```
+
+Run the API:
+
+```powershell
+python -m uvicorn hybrid_pki.api.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Open Swagger UI:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+### Docker PQC Mode
+
+Use this mode to run real post-quantum cryptography features with `liboqs`.
+
+```powershell
+docker compose --profile pqc build hybrid-pki-pqc
+docker compose --profile pqc up hybrid-pki-pqc
+```
+
+Open Swagger UI:
+
+```text
+http://127.0.0.1:8001/docs
+```
+
+Verify PQC support:
+
+```text
+GET /pqc/status
+```
+
+Expected result:
+
+```json
+{
+  "available": true,
+  "message": "liboqs-python is available."
+}
+```
+
+Run real PQC tests:
+
+```powershell
+docker compose --profile pqc-test up --build hybrid-pki-pqc-tests
+```
+
+For full setup instructions, see:
+
+```text
+docs/07_docker_pqc_setup.md
+```
+
+For API usage examples, see:
+
+```text
+docs/08_api_usage.md
+```
+
+
 ## Main Features
 
 ### Classical PKI
