@@ -549,6 +549,7 @@ docs/04_certificate_lifecycle.md
 docs/05_security_model.md
 docs/06_attack_scenarios.md
 docs/07_docker_pqc_setup.md
+docs/08_api_usage.md
 ```
 
 ---
