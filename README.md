@@ -649,6 +649,11 @@ docs/05_security_model.md
 docs/06_attack_scenarios.md
 docs/07_docker_pqc_setup.md
 docs/08_api_usage.md
+docs/09_project_architecture.md 
+docs/10_security_model_and_limitations.md 
+docs/11_demo_scenarios.md 
+docs/12_roadmap.md 
+docs/13_troubleshooting.md
 ```
 
 ---
