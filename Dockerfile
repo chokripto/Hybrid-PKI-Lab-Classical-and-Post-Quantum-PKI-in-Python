@@ -14,8 +14,7 @@ WORKDIR ${APP_HOME}
 
 COPY requirements.txt pyproject.toml README.md ./
 RUN python -m pip install --upgrade pip setuptools wheel \
-    && pip install -r requirements.txt \
-    && pip install .
+    && pip install -r requirements.txt
 
 COPY src ./src
 COPY examples ./examples
@@ -23,6 +22,8 @@ COPY tests ./tests
 COPY benchmarks ./benchmarks
 COPY docs ./docs
 COPY scripts ./scripts
+
+RUN pip install .
 
 RUN groupadd --system hybridpki \
     && useradd --system --gid hybridpki --home-dir /app hybridpki \
