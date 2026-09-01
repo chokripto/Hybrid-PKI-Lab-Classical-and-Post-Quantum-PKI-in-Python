@@ -1,688 +1,134 @@
-# Hybrid-PKI-Lab
+# Hybrid PKI Lab
 
-![Tests](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/tests.yml/badge.svg)
-![Lint](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/lint.yml/badge.svg)
-![Security](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/security.yml/badge.svg)
+[![Tests](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/tests.yml/badge.svg)](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/tests.yml)
+[![Real PQC](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/pqc-integration.yml/badge.svg)](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/pqc-integration.yml)
+[![Lint](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/lint.yml/badge.svg)](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/lint.yml)
+[![Security](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/security.yml/badge.svg)](https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python/actions/workflows/security.yml)
 
-**Hybrid-PKI-Lab** is an educational and experimental Python project for building, testing and comparing classical Public Key Infrastructure, PKI, Post-Quantum Cryptography, PQC, and Hybrid PKI combining classical cryptography and PQC.
+An educational research prototype for exploring migration from classical PKI to hybrid classical/post-quantum architectures in Python.
 
-The project demonstrates how traditional PKI systems based on RSA, ECDSA, Ed25519 and X.509 certificates can evolve toward hybrid post-quantum architectures using algorithms such as ML-KEM and ML-DSA.
+The laboratory combines X.509, RSA, ECDSA, Ed25519 and X25519 with ML-KEM and ML-DSA through an optional, pinned `liboqs` environment.
 
----
+> **Scope:** research, teaching, protocol experimentation and portfolio demonstration. This repository is not a production Certificate Authority, TLS implementation or replacement for a validated PKI stack.
 
-## Quick Start
+## What the laboratory demonstrates
 
-Hybrid-PKI-Lab can be used in two modes:
+- Classical Root and Intermediate CA workflows
+- Server certificates, CSRs, chains and revocation simulation
+- ML-KEM key encapsulation and ML-DSA signatures
+- Experimental JSON hybrid certificates with dual signatures
+- Strict, classical-only, PQC-only and downgrade-demonstration policies
+- Transcript-bound X25519 + ML-KEM key establishment
+- Classical/PQC benchmarks and a local FastAPI interface
+- Standard CI plus real-PQC integration tests inside Docker
 
-```text
-Standard mode:
-No liboqs required.
-No Docker required.
-Recommended for normal development and GitHub Actions.
+## Security model
 
-Docker PQC mode:
-Uses liboqs inside Docker.
-Recommended for real post-quantum cryptography experiments.
-```
+The recommended validation policy is `hybrid-strict`: both classical and PQC signatures must validate.
 
----
+The hybrid key establishment combines independent secrets and binds HKDF to the public transcript. It remains **unauthenticated** unless a higher-level protocol signs that transcript or runs it inside an authenticated transport. The `hybrid-fallback` policy exists only to demonstrate migration and downgrade risk.
 
-## Project Status
+State-changing API routes are disabled by default. Docker Compose publishes services on localhost only. See [Security model and limitations](docs/10_security_model_and_limitations.md), [attack scenarios](docs/06_attack_scenarios.md), and [SECURITY.md](SECURITY.md).
 
-Hybrid-PKI-Lab is currently a stable educational and experimental lab.
+## Supported algorithms
 
-| Area | Status |
+| Purpose | Implemented algorithms |
 |---|---|
-| Classical PKI | Complete |
-| PQC fallback | Complete |
-| Hybrid PKI core | Complete |
-| FastAPI API | Complete |
-| Docker PQC mode with liboqs | Complete |
-| Benchmarks | Complete |
-| GitHub Actions | Complete |
-| Documentation | Complete |
-| Test suite | Extended |
-| Production readiness | Not production-ready |
-
-The project is designed for education, research, experimentation and portfolio demonstration.
-
-It is not intended to be used as a production Certificate Authority.
-
-### Standard Mode
-
-Use this mode if you want to run the project quickly without installing native post-quantum cryptography dependencies.
-
-```powershell
-git clone https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python.git
-cd Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python
-
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
-
-$env:HYBRID_PKI_DISABLE_OQS="1"
-pytest -v
-```
-
-Run the API:
-
-```powershell
-python -m uvicorn hybrid_pki.api.main:app --host 127.0.0.1 --port 8000 --reload
-```
-
-Open Swagger UI:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
----
-
-### Docker PQC Mode
-
-Use this mode to run real post-quantum cryptography features with `liboqs`.
-
-```powershell
-docker compose --profile pqc build hybrid-pki-pqc
-docker compose --profile pqc up hybrid-pki-pqc
-```
-
-Open Swagger UI:
-
-```text
-http://127.0.0.1:8001/docs
-```
-
-Verify PQC support:
-
-```text
-GET /pqc/status
-```
-
-Expected result:
-
-```json
-{
-  "available": true,
-  "message": "liboqs-python is available."
-}
-```
-
-Run real PQC tests:
-
-```powershell
-docker compose --profile pqc-test up --build hybrid-pki-pqc-tests
-```
-
-For full setup instructions, see:
-
-```text
-docs/07_docker_pqc_setup.md
-```
-
-For API usage examples, see:
-
-```text
-docs/08_api_usage.md
-```
-
-
-## Main Features
-
-### Classical PKI
-
-* Root CA generation
-* Intermediate CA generation
-* Server certificate issuance
-* Client certificate issuance
-* X.509 certificate generation
-* CSR generation
-* Certificate chain validation
-* Certificate revocation using CRL
-* OCSP-like revocation simulation
-* PEM and DER serialization
-* RSA, ECDSA and Ed25519 support
-
-### Post-Quantum Cryptography
-
-* ML-KEM key encapsulation
-* ML-DSA digital signatures
-* PQC key generation
-* PQC signing and verification
-* PQC key serialization helpers
-* Classical vs PQC benchmarks
-* Optional `liboqs-python` provider
-* Safe fallback when `liboqs` is unavailable
-
-### Hybrid PKI
-
-* Experimental hybrid certificate format
-* Classical public key + PQC public key
-* Classical signature + PQC signature
-* Hybrid certificate validation policies
-* Hybrid handshake simulation
-* Hybrid shared secret derivation
-* Downgrade attack demonstration
-* Migration from classical PKI to hybrid PKI
-
-### API
-
-* FastAPI-based REST API
-* Classical PKI endpoints
-* PQC status endpoint
-* Hybrid PKI endpoints
-* Benchmark endpoints
-* Swagger UI documentation
-
----
-
-## Project Strategy
-
-This project supports two execution modes:
-
-```text
-Standard mode:
-Usable without liboqs and without Docker.
-
-Advanced mode:
-Full post-quantum functionality with liboqs through Docker.
-```
-
-This strategy keeps the project easy to install and test while still supporting real post-quantum cryptography experiments in a controlled Docker environment.
-
----
-
-## Execution Modes
-
-### Standard Mode
-
-The standard mode works without `liboqs` and without Docker.
-
-It is recommended for:
-
-* Normal development
-* GitHub Actions
-* Classical PKI features
-* Stable and fast tests
-* Users who do not want to install native PQC dependencies
-
-In this mode:
-
-* Classical PKI works.
-* The FastAPI application works.
-* Classical benchmarks work.
-* PQC features are safely skipped or reported as unavailable.
-* Tests remain fast and stable.
-
-Run:
-
-```powershell
-$env:HYBRID_PKI_DISABLE_OQS="1"
-pytest -v
-```
-
-Expected result:
-
-```text
-passed + skipped
-```
-
-The skipped tests are the real PQC tests that require `liboqs`.
-
----
-
-### Docker PQC Mode
-
-The Docker PQC mode enables real post-quantum cryptography through `liboqs`.
-
-It supports:
-
-* ML-KEM
-* ML-DSA
-* Hybrid X25519 + ML-KEM handshake
-* Hybrid certificate experiments
-* PQC benchmarks
-* Real `liboqs-python` execution inside Docker
-
-Build the PQC image:
-
-```powershell
-docker compose --profile pqc build hybrid-pki-pqc
-```
-
-Run the PQC API:
-
-```powershell
-docker compose --profile pqc up hybrid-pki-pqc
-```
-
-Open Swagger UI:
-
-```text
-http://127.0.0.1:8001/docs
-```
-
-Full Docker PQC setup guide:
-
-```text
-docs/07_docker_pqc_setup.md
-```
-
----
-
-## Project Structure
-
-```text
-hybrid-pki-lab/
-├── README.md
-├── LICENSE
-├── pyproject.toml
-├── requirements.txt
-├── Dockerfile
-├── Dockerfile.pqc
-├── docker-compose.yml
-├── Makefile
-├── docs/
-│   ├── 01_pki_classique.md
-│   ├── 02_pki_hybride.md
-│   ├── 03_pqc_algorithms.md
-│   ├── 04_certificate_lifecycle.md
-│   ├── 05_security_model.md
-│   ├── 06_attack_scenarios.md
-│   ├── 07_docker_pqc_setup.md
-│   └── diagrams/
-├── benchmarks/
-│   ├── benchmark_keygen.py
-│   ├── benchmark_signatures.py
-│   ├── benchmark_handshake.py
-│   └── results/
-├── tests/
-└── src/hybrid_pki/
-```
-
----
-
-## Supported Algorithms
-
-| Category               | Algorithms                               |
-| ---------------------- | ---------------------------------------- |
-| Classical signatures   | RSA-PSS, ECDSA P-256, Ed25519            |
-| Classical key exchange | X25519, ECDH                             |
-| Hashing                | SHA-256, SHA-384                         |
-| KDF                    | HKDF                                     |
-| PQC KEM                | ML-KEM-512, ML-KEM-768, ML-KEM-1024      |
-| PQC signatures         | ML-DSA-44, ML-DSA-65, ML-DSA-87, SLH-DSA |
-
----
-
-## Hybrid Security Model
-
-Recommended policy:
-
-```text
-hybrid-strict
-```
-
-Hybrid validation rule:
-
-$$
-valid_{hybrid} = valid_{classical} \land valid_{PQC}
-$$
-
-Hybrid shared secret derivation:
-
-$$
-secret_{hybrid} = HKDF(secret_{classical} \parallel secret_{PQC})
-$$
-
-The `hybrid-strict` policy requires both the classical and the post-quantum cryptographic checks to succeed.
-
----
-
-## Installation
-
-### Windows PowerShell
-
-```powershell
-git clone https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python.git
-cd Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python
-
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
-```
-
-### Linux / macOS
+| Certificate/signature keys | RSA, ECDSA P-256, Ed25519 |
+| Classical key establishment | X25519 |
+| Hash/KDF | SHA-256, SHA-384, HKDF-SHA256 |
+| PQC KEM | ML-KEM-512, ML-KEM-768, ML-KEM-1024 through liboqs |
+| PQC signatures | ML-DSA-44, ML-DSA-65, ML-DSA-87 through liboqs |
+
+Algorithm availability depends on the pinned `liboqs` build. SLH-DSA is not currently wrapped by this project.
+
+## Standard mode
 
 ```bash
 git clone https://github.com/chokripto/Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python.git
 cd Hybrid-PKI-Lab-Classical-and-Post-Quantum-PKI-in-Python
-
-python -m venv venv
-source venv/bin/activate
-
+python -m venv .venv
+source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 pip install -e .
+export HYBRID_PKI_DISABLE_OQS=1
+pytest
+uvicorn hybrid_pki.api.main:app --host 127.0.0.1 --port 8000
 ```
 
----
+On PowerShell, activate with `.\.venv\Scripts\Activate.ps1` and set `$env:HYBRID_PKI_DISABLE_OQS="1"`.
 
-## Run API
-
-### Standard API
+## Real-PQC Docker mode
 
 ```bash
-uvicorn hybrid_pki.api.main:app --reload
-```
-
-Open:
-
-```text
-http://localhost:8000/docs
-```
-
-Or on Windows PowerShell:
-
-```powershell
-python -m uvicorn hybrid_pki.api.main:app --host 127.0.0.1 --port 8000 --reload
-```
-
-Open:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
----
-
-## Docker
-
-### Standard Docker Mode
-
-```powershell
-docker compose up --build
-```
-
-Open:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-### Docker PQC Mode
-
-Build the image with `liboqs`:
-
-```powershell
 docker compose --profile pqc build hybrid-pki-pqc
-```
-
-Run the PQC API:
-
-```powershell
 docker compose --profile pqc up hybrid-pki-pqc
-```
-
-Open:
-
-```text
-http://127.0.0.1:8001/docs
-```
-
-Stop the PQC API:
-
-```powershell
-docker compose --profile pqc down
-```
-
----
-
-## API Endpoints
-
-### General
-
-```text
-GET /
-GET /health
-```
-
-### Classical PKI
-
-```text
-POST /classical/ca/root/init
-POST /classical/ca/intermediate/init
-POST /classical/certificates/server/issue
-POST /classical/certificates/server/verify
-POST /classical/certificates/server/revoke
-GET  /classical/certificates/revoked
-GET  /classical/status
-```
-
-### PQC
-
-```text
-GET /pqc/status
-```
-
-### Hybrid PKI
-
-```text
-GET  /hybrid/status
-POST /hybrid/ca/create-demo
-POST /hybrid/certificates/create-demo
-POST /hybrid/certificates/verify-demo
-POST /hybrid/handshake/simulate
-```
-
-### Benchmarks
-
-```text
-GET  /benchmarks/status
-POST /benchmarks/run-keygen
-POST /benchmarks/run-signatures
-POST /benchmarks/run-handshake
-GET  /benchmarks/results
-```
-
----
-
-## Verify PQC Availability
-
-When running in Docker PQC mode, open Swagger and run:
-
-```text
-GET /pqc/status
-```
-
-Expected result:
-
-```json
-{
-  "available": true,
-  "message": "liboqs-python is available."
-}
-```
-
-You can also test from PowerShell:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:8001/pqc/status
-```
-
----
-
-## Hybrid Handshake Example
-
-In Docker PQC mode, run:
-
-```text
-POST /hybrid/handshake/simulate
-```
-
-Request body:
-
-```json
-{
-  "pqc_algorithm": "ML-KEM-768"
-}
-```
-
-Expected result:
-
-```json
-{
-  "status": "success",
-  "algorithm": {
-    "classical": "X25519",
-    "pqc": "ML-KEM-768",
-    "kdf": "HKDF-SHA256"
-  },
-  "secrets_match": true
-}
-```
-
-The most important value is:
-
-```json
-"secrets_match": true
-```
-
-This confirms that the hybrid key exchange works correctly with both classical and post-quantum key exchange material.
-
----
-
-## Tests
-
-### Standard Tests
-
-Use this mode for normal development and GitHub Actions:
-
-```powershell
-$env:HYBRID_PKI_DISABLE_OQS="1"
-pytest -v
-```
-
-Expected result:
-
-```text
-passed + skipped
-```
-
-### Docker PQC Tests
-
-Use this mode to run real PQC tests with `liboqs`:
-
-```powershell
 docker compose --profile pqc-test up --build hybrid-pki-pqc-tests
 ```
 
-In this mode, tests that are skipped in standard mode should run with real `liboqs` support.
+Swagger UI is available locally at <http://127.0.0.1:8001/docs>.
 
----
+## Enabling laboratory mutations
 
-## Benchmarks
+CA initialization, certificate issuance/revocation, hybrid demo creation and benchmark execution are disabled by default.
 
-Run benchmark scripts locally:
-
-```powershell
-python benchmarks/benchmark_keygen.py
-python benchmarks/benchmark_signatures.py
-python benchmarks/benchmark_handshake.py
+```bash
+export HYBRID_PKI_ENABLE_MUTATIONS=1
+export HYBRID_PKI_API_KEY="replace-with-a-random-lab-key"
 ```
 
-Run benchmarks in Docker PQC mode:
+Send the key in the `X-Hybrid-PKI-API-Key` header. Never expose this API to an untrusted network. Root CA initialization refuses to overwrite an existing Root CA.
 
-```powershell
-docker compose --profile pqc run --rm hybrid-pki-pqc python benchmarks/benchmark_keygen.py
-docker compose --profile pqc run --rm hybrid-pki-pqc python benchmarks/benchmark_signatures.py
-docker compose --profile pqc run --rm hybrid-pki-pqc python benchmarks/benchmark_handshake.py
-```
+## API overview
 
-Benchmark results are written to:
+Read-only routes include `/health`, `/classical/status`, `/pqc/status`, `/hybrid/status`, `/benchmarks/status` and `/benchmarks/results`. Protected routes cover CA creation, issuance, revocation, hybrid demonstrations and benchmark execution. See [API usage](docs/08_api_usage.md).
+
+## Repository map
 
 ```text
-benchmarks/results/
+src/hybrid_pki/
+├── api/          # local FastAPI laboratory interface
+├── classical/    # X.509, CA, chain and revocation primitives
+├── hybrid/       # experimental certificates, policies and key establishment
+└── pqc/          # liboqs provider, ML-KEM, ML-DSA and serialization
+
+tests/            # standard and real-PQC tests
+benchmarks/       # performance experiments
+docs/             # architecture, threat model and migration notes
 ```
 
-Generated JSON benchmark results should not be committed to GitHub.
+## Development checks
 
----
-
-## Development Commands
-
-Format code:
-
-```powershell
-python -m black src tests examples benchmarks
+```bash
+pytest
+ruff check src tests examples benchmarks
+black --check src tests examples benchmarks
+bandit -r src -ll
+pip-audit
 ```
 
-Run Ruff:
+GitHub Actions tests Python 3.11 and 3.12. A separate workflow builds the pinned PQC image and executes ML-KEM, ML-DSA and hybrid tests.
 
-```powershell
-python -m ruff check src tests examples benchmarks --fix
-```
+## Limitations
 
-Run tests:
-
-```powershell
-pytest -v
-```
-
-Check Git status:
-
-```powershell
-git status
-```
-
----
-
-## Security Notice
-
-This project is for education, research and experimentation.
-
-Do not use it directly in production without:
-
-* Professional cryptographic review
-* Secure key management
-* Proper CA operational procedures
-* Hardened infrastructure
-* Audit logging
-* Secure revocation handling
-* Formal policy and compliance review
-
-Generated keys, certificates, benchmark results and local logs should not be committed to GitHub.
-
----
+- The hybrid certificate is pedagogical JSON, not standardized X.509.
+- The hybrid exchange does not authenticate peers by itself.
+- Local private-key storage is for demonstrations; real CAs require an HSM or managed KMS.
+- Revocation and OCSP behavior are simulations.
+- Validation covers a teaching subset of full RFC 5280 path validation.
+- Dependencies and containers still require periodic security review.
 
 ## Documentation
 
-Additional documentation is available in the `docs/` directory:
+Start with [architecture](docs/09_project_architecture.md), [classical PKI](docs/01_pki_classique.md), [hybrid PKI](docs/02_pki_hybride.md), [PQC algorithms](docs/03_pqc_algorithms.md), [security limitations](docs/10_security_model_and_limitations.md), [demo scenarios](docs/11_demo_scenarios.md), and the [roadmap](docs/12_roadmap.md).
 
-```text
-docs/01_pki_classique.md
-docs/02_pki_hybride.md
-docs/03_pqc_algorithms.md
-docs/04_certificate_lifecycle.md
-docs/05_security_model.md
-docs/06_attack_scenarios.md
-docs/07_docker_pqc_setup.md
-docs/08_api_usage.md
-docs/09_project_architecture.md 
-docs/10_security_model_and_limitations.md 
-docs/11_demo_scenarios.md 
-docs/12_roadmap.md 
-docs/13_troubleshooting.md
-```
+## Author
 
----
+**Dr. Chokri NOUAR**  
+Cybersecurity · Network Security · Post-Quantum Cryptography  
+*Engineering Trust in the Digital and Quantum Era.*
 
 ## License
 
-MIT License.
+Released under the [MIT License](LICENSE). The license does not make the experimental design suitable for production deployment.
