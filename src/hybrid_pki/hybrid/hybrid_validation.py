@@ -32,10 +32,21 @@ def validate_hybrid_certificate(
     classical_ca_public_key,
     pqc_ca_public_key: bytes,
     policy: HybridValidationPolicy = HybridValidationPolicy.HYBRID_STRICT,
+    expected_issuer: str | None = None,
 ) -> HybridValidationResult:
     """
     Validate a hybrid certificate according to a policy.
     """
+    if expected_issuer is not None and certificate.issuer != expected_issuer:
+        return HybridValidationResult(
+            valid=False,
+            policy=policy.value,
+            classical_signature_valid=False,
+            pqc_signature_valid=False,
+            time_valid=False,
+            reason="certificate issuer does not match the expected issuer",
+        )
+
     time_valid = is_hybrid_certificate_time_valid(certificate)
 
     if not time_valid:
