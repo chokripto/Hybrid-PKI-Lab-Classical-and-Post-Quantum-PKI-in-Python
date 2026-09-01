@@ -73,10 +73,33 @@ class HybridCertificate:
 
     @classmethod
     def from_dict(cls, data: dict) -> HybridCertificate:
-        """
-        Create certificate from dictionary.
-        """
-        return cls(**data)
+        """Create and validate a certificate from an untrusted dictionary."""
+        expected_fields = set(cls.__dataclass_fields__)
+        provided_fields = set(data)
+        if provided_fields != expected_fields:
+            missing = sorted(expected_fields - provided_fields)
+            unknown = sorted(provided_fields - expected_fields)
+            raise ValueError(f"Invalid hybrid certificate fields: missing={missing}, unknown={unknown}")
+
+        certificate = cls(**data)
+        if certificate.version != 1:
+            raise ValueError("Unsupported hybrid certificate version")
+        required_text = (
+            certificate.serial_number,
+            certificate.subject,
+            certificate.issuer,
+            certificate.classical_algorithm,
+            certificate.classical_public_key_pem,
+            certificate.pqc_signature_algorithm,
+            certificate.pqc_public_key_b64,
+        )
+        if not all(isinstance(value, str) and value.strip() for value in required_text):
+            raise ValueError("Hybrid certificate contains an empty or invalid text field")
+
+        certificate.pqc_public_key
+        _parse_aware_datetime(certificate.not_before)
+        _parse_aware_datetime(certificate.not_after)
+        return certificate
 
     @classmethod
     def from_json(cls, data: str) -> HybridCertificate:
@@ -91,6 +114,16 @@ class HybridCertificate:
         Return decoded PQC public key.
         """
         return base64_to_bytes(self.pqc_public_key_b64)
+
+
+def _parse_aware_datetime(value: str) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Invalid ISO-8601 certificate timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("Certificate timestamps must include a timezone")
+    return parsed.astimezone(UTC)
 
 
 def generate_hybrid_serial_number(prefix: str = "HYB") -> str:
@@ -113,6 +146,9 @@ def create_unsigned_hybrid_certificate(
     """
     Create an unsigned hybrid certificate.
     """
+    if not 1 <= days_valid <= 397:
+        raise ValueError("days_valid must be between 1 and 397")
+
     now = datetime.now(UTC)
 
     return HybridCertificate(
@@ -156,7 +192,10 @@ def is_hybrid_certificate_time_valid(certificate: HybridCertificate) -> bool:
     Verify hybrid certificate validity period.
     """
     now = datetime.now(UTC)
-    not_before = datetime.fromisoformat(certificate.not_before)
-    not_after = datetime.fromisoformat(certificate.not_after)
+    try:
+        not_before = _parse_aware_datetime(certificate.not_before)
+        not_after = _parse_aware_datetime(certificate.not_after)
+    except ValueError:
+        return False
 
-    return not_before <= now <= not_after
+    return not_before <= not_after and not_before <= now <= not_after
