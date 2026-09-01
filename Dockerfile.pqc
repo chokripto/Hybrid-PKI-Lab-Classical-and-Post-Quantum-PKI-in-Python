@@ -36,8 +36,7 @@ RUN git clone --depth 1 --branch "${LIBOQS_REF}" \
 COPY requirements.txt pyproject.toml README.md ./
 RUN python -m pip install --upgrade pip setuptools wheel \
     && pip install -r requirements.txt \
-    && pip install "git+https://github.com/open-quantum-safe/liboqs-python.git@${LIBOQS_PYTHON_REF}" \
-    && pip install .
+    && pip install "git+https://github.com/open-quantum-safe/liboqs-python.git@${LIBOQS_PYTHON_REF}"
 
 COPY src ./src
 COPY tests ./tests
@@ -45,6 +44,8 @@ COPY benchmarks ./benchmarks
 COPY examples ./examples
 COPY docs ./docs
 COPY scripts ./scripts
+
+RUN pip install .
 
 RUN groupadd --system hybridpki \
     && useradd --system --gid hybridpki --home-dir /app hybridpki \
