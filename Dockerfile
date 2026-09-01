@@ -1,32 +1,21 @@
-FROM python:3.11-slim
+FROM python:3.12.8-slim-bookworm
 
-LABEL maintainer="Chokri"
+LABEL maintainer="Dr. Chokri NOUAR"
 LABEL project="Hybrid-PKI-Lab"
+LABEL security.profile="local-educational-lab"
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PIP_NO_CACHE_DIR=1
-ENV APP_HOME=/app
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    APP_HOME=/app \
+    HYBRID_PKI_DISABLE_OQS=1
 
 WORKDIR ${APP_HOME}
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git cmake ninja-build build-essential pkg-config libssl-dev ca-certificates curl python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN git clone --depth 1 https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs \
-    && cmake -S /tmp/liboqs -B /tmp/liboqs/build -GNinja \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DOQS_BUILD_ONLY_LIB=ON -DOQS_USE_OPENSSL=ON \
-    && cmake --build /tmp/liboqs/build \
-    && cmake --install /tmp/liboqs/build \
-    && rm -rf /tmp/liboqs
-
-ENV LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
-
 COPY requirements.txt pyproject.toml README.md ./
-RUN pip install --upgrade pip setuptools wheel \
+RUN python -m pip install --upgrade pip setuptools wheel \
     && pip install -r requirements.txt \
-    && pip install liboqs-python || true
+    && pip install .
 
 COPY src ./src
 COPY examples ./examples
@@ -35,8 +24,12 @@ COPY benchmarks ./benchmarks
 COPY docs ./docs
 COPY scripts ./scripts
 
-RUN pip install -e .
-RUN mkdir -p certs/root certs/intermediate certs/issued certs/revoked certs/hybrid logs
+RUN groupadd --system hybridpki \
+    && useradd --system --gid hybridpki --home-dir /app hybridpki \
+    && mkdir -p certs/root certs/intermediate certs/issued certs/revoked certs/hybrid logs benchmarks/results \
+    && chown -R hybridpki:hybridpki /app
+
+USER hybridpki
 
 EXPOSE 8000
 CMD ["uvicorn", "hybrid_pki.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
