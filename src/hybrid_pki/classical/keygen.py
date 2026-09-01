@@ -79,7 +79,9 @@ def save_pem_file(path: str | Path, data: bytes) -> None:
 
 def load_private_key(path: str | Path, password: bytes | None = None):
     """Load a private key from a PEM file."""
-    return serialization.load_pem_private_key(Path(path).read_bytes(), password=password)
+    return serialization.load_pem_private_key(
+        Path(path).read_bytes(), password=password
+    )
 
 
 def load_public_key(path: str | Path):

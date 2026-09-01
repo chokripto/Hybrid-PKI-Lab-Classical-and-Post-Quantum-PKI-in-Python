@@ -1,5 +1,4 @@
 import base64
-import binascii
 
 import pytest
 
@@ -52,7 +51,7 @@ def test_base64_roundtrip_for_multiple_inputs(data):
 def test_base64_to_bytes_raises_for_invalid_base64():
     invalid_base64 = "not-valid-base64@@@"
 
-    with pytest.raises(binascii.Error):
+    with pytest.raises(ValueError, match="Invalid Base64 data"):
         base64_to_bytes(invalid_base64)
 
 

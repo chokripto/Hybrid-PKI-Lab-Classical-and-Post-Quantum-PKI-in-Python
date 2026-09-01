@@ -79,7 +79,10 @@ class HybridCertificate:
         if provided_fields != expected_fields:
             missing = sorted(expected_fields - provided_fields)
             unknown = sorted(provided_fields - expected_fields)
-            raise ValueError(f"Invalid hybrid certificate fields: missing={missing}, unknown={unknown}")
+            raise ValueError(
+                "Invalid hybrid certificate fields: "
+                f"missing={missing}, unknown={unknown}"
+            )
 
         certificate = cls(**data)
         if certificate.version != 1:
@@ -94,9 +97,11 @@ class HybridCertificate:
             certificate.pqc_public_key_b64,
         )
         if not all(isinstance(value, str) and value.strip() for value in required_text):
-            raise ValueError("Hybrid certificate contains an empty or invalid text field")
+            raise ValueError(
+                "Hybrid certificate contains an empty or invalid text field"
+            )
 
-        certificate.pqc_public_key
+        _ = certificate.pqc_public_key
         _parse_aware_datetime(certificate.not_before)
         _parse_aware_datetime(certificate.not_after)
         return certificate

@@ -184,7 +184,9 @@ def create_hybrid_demo_ca():
         ) from exc
 
 
-@router.post("/certificates/create-demo", dependencies=[Depends(require_mutation_access)])
+@router.post(
+    "/certificates/create-demo", dependencies=[Depends(require_mutation_access)]
+)
 def create_hybrid_demo_certificate(request: HybridCertificateDemoRequest):
     """
     Create and sign a demo hybrid certificate.
@@ -376,7 +378,10 @@ def simulate_hybrid_handshake(request: HybridHandshakeRequest):
             },
             "secrets_match": secrets_match,
             "authenticated": False,
-            "security_note": "Transcript-bound key establishment; peer authentication is not provided.",
+            "security_note": (
+                "Transcript-bound key establishment; peer authentication "
+                "is not provided."
+            ),
             "hybrid_secret_length": len(server_secret),
             "pqc_ciphertext_length": len(client_result.pqc_ciphertext),
             "server_classical_public_key_length": len(
