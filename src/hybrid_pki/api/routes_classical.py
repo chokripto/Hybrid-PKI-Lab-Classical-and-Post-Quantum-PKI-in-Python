@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from hybrid_pki.api.security import require_mutation_access
 from hybrid_pki.classical.ca import (
     create_intermediate_ca_certificate,
     create_root_ca_certificate,
@@ -117,7 +118,7 @@ def ensure_file_exists(path: Path, description: str) -> None:
         )
 
 
-@router.post("/ca/root/init")
+@router.post("/ca/root/init", dependencies=[Depends(require_mutation_access)])
 def init_root_ca(request: RootCARequest):
     """
     Generate a classical Root CA.
@@ -128,6 +129,12 @@ def init_root_ca(request: RootCARequest):
     - Root CA certificate PEM
     - Root CA certificate DER
     """
+    if ROOT_KEY_PATH.exists() or ROOT_CERT_PATH.exists():
+        raise HTTPException(
+            status_code=409,
+            detail="Root CA already exists; remove it explicitly before reinitializing.",
+        )
+
     ROOT_DIR.mkdir(parents=True, exist_ok=True)
 
     private_key = generate_private_key(request.algorithm)
@@ -174,7 +181,7 @@ def init_root_ca(request: RootCARequest):
     }
 
 
-@router.post("/ca/intermediate/init")
+@router.post("/ca/intermediate/init", dependencies=[Depends(require_mutation_access)])
 def init_intermediate_ca(request: IntermediateCARequest):
     """
     Generate an Intermediate CA signed by the Root CA.
@@ -235,7 +242,7 @@ def init_intermediate_ca(request: IntermediateCARequest):
     }
 
 
-@router.post("/certificates/server/issue")
+@router.post("/certificates/server/issue", dependencies=[Depends(require_mutation_access)])
 def issue_classical_server_certificate(request: ServerCertificateRequest):
     """
     Issue a classical server certificate signed by the Intermediate CA.
@@ -323,7 +330,10 @@ def verify_classical_server_certificate(request: VerifyCertificateRequest):
     """
     Verify a classical server certificate against the Intermediate CA and Root CA.
     """
-    certificate_path = Path(request.certificate_path)
+    certificate_path = Path(request.certificate_path).resolve()
+    issued_root = ISSUED_DIR.resolve()
+    if issued_root not in certificate_path.parents:
+        raise HTTPException(status_code=400, detail="Certificate path must be inside certs/issued")
 
     ensure_file_exists(certificate_path, "Server certificate")
     ensure_file_exists(INTERMEDIATE_CERT_PATH, "Intermediate CA certificate")
@@ -367,7 +377,7 @@ def verify_classical_server_certificate(request: VerifyCertificateRequest):
     }
 
 
-@router.post("/certificates/server/revoke")
+@router.post("/certificates/server/revoke", dependencies=[Depends(require_mutation_access)])
 def revoke_classical_server_certificate(request: RevokeCertificateRequest):
     """
     Revoke a classical server certificate.
