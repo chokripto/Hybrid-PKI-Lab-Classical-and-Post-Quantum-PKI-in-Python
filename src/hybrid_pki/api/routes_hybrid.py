@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from hybrid_pki.api.security import require_mutation_access
 from hybrid_pki.classical.keygen import (
     generate_ecdsa_private_key,
     save_pem_file,
@@ -68,7 +69,7 @@ class HybridCertificateDemoRequest(BaseModel):
     )
     classical_algorithm: str = Field(default="ECDSA-P256")
     pqc_signature_algorithm: str = Field(default="ML-DSA-65")
-    days_valid: int = Field(default=365, ge=1)
+    days_valid: int = Field(default=365, ge=1, le=397)
 
 
 class HybridCertificateVerifyRequest(BaseModel):
@@ -120,7 +121,7 @@ def hybrid_status():
     }
 
 
-@router.post("/ca/create-demo")
+@router.post("/ca/create-demo", dependencies=[Depends(require_mutation_access)])
 def create_hybrid_demo_ca():
     """
     Create demo Hybrid CA material.
@@ -183,7 +184,7 @@ def create_hybrid_demo_ca():
         ) from exc
 
 
-@router.post("/certificates/create-demo")
+@router.post("/certificates/create-demo", dependencies=[Depends(require_mutation_access)])
 def create_hybrid_demo_certificate(request: HybridCertificateDemoRequest):
     """
     Create and sign a demo hybrid certificate.
@@ -335,7 +336,7 @@ def verify_hybrid_demo_certificate(request: HybridCertificateVerifyRequest):
         ) from exc
 
 
-@router.post("/handshake/simulate")
+@router.post("/handshake/simulate", dependencies=[Depends(require_mutation_access)])
 def simulate_hybrid_handshake(request: HybridHandshakeRequest):
     """
     Simulate a hybrid handshake using X25519 + ML-KEM.
@@ -361,6 +362,7 @@ def simulate_hybrid_handshake(request: HybridHandshakeRequest):
             server_pqc_secret_key=server_keys.pqc_secret_key,
             pqc_ciphertext=client_result.pqc_ciphertext,
             pqc_algorithm=server_keys.pqc_algorithm,
+            server_pqc_public_key=server_keys.pqc_public_key,
         )
 
         secrets_match = server_secret == client_result.hybrid_secret
@@ -373,6 +375,8 @@ def simulate_hybrid_handshake(request: HybridHandshakeRequest):
                 "kdf": "HKDF-SHA256",
             },
             "secrets_match": secrets_match,
+            "authenticated": False,
+            "security_note": "Transcript-bound key establishment; peer authentication is not provided.",
             "hybrid_secret_length": len(server_secret),
             "pqc_ciphertext_length": len(client_result.pqc_ciphertext),
             "server_classical_public_key_length": len(
