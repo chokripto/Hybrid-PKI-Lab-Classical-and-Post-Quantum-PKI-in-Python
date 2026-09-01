@@ -137,6 +137,10 @@ def validate_chain(
     for index in range(len(chain) - 1):
         child = chain[index]
         issuer = chain[index + 1]
+        if child.issuer != issuer.subject:
+            raise CertificateValidationError(
+                "Certificate issuer does not match the next certificate subject"
+            )
         verify_signature(child, issuer)
 
     if root_certificate.subject != root_certificate.issuer:
