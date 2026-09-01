@@ -73,6 +73,7 @@ def hybrid_x25519_mlkem_handshake() -> bytes:
         server_pqc_secret_key=server_keys.pqc_secret_key,
         pqc_ciphertext=client_result.pqc_ciphertext,
         pqc_algorithm=server_keys.pqc_algorithm,
+        server_pqc_public_key=server_keys.pqc_public_key,
     )
 
     if server_secret != client_result.hybrid_secret:
