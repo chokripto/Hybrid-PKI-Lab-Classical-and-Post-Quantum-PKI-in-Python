@@ -110,6 +110,22 @@ def test_hybrid_handshake_with_oqs():
         server_pqc_secret_key=server_keys.pqc_secret_key,
         pqc_ciphertext=client_result.pqc_ciphertext,
         pqc_algorithm=server_keys.pqc_algorithm,
+        server_pqc_public_key=server_keys.pqc_public_key,
     )
 
     assert server_secret == client_result.hybrid_secret
+
+
+
+def test_hybrid_certificate_rejects_excessive_validity():
+    classical_key = generate_ecdsa_private_key()
+    with pytest.raises(ValueError, match="days_valid"):
+        create_unsigned_hybrid_certificate(
+            subject="CN=example.com",
+            issuer="CN=Lab CA",
+            classical_algorithm="ECDSA-P256",
+            classical_public_key_pem=serialize_public_key(classical_key.public_key()),
+            pqc_signature_algorithm="ML-DSA-65",
+            pqc_public_key=b"test-key",
+            days_valid=398,
+        )
