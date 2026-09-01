@@ -9,7 +9,9 @@ from benchmarks.benchmark_signatures import (
     benchmark_classical_signatures,
     benchmark_pqc_signatures,
 )
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from hybrid_pki.api.security import require_mutation_access
 
 router = APIRouter(
     prefix="/benchmarks",
@@ -73,7 +75,7 @@ def benchmark_status():
     }
 
 
-@router.post("/run-keygen")
+@router.post("/run-keygen", dependencies=[Depends(require_mutation_access)])
 def run_keygen_benchmark():
     """
     Run classical and PQC key generation benchmarks.
@@ -96,7 +98,7 @@ def run_keygen_benchmark():
     }
 
 
-@router.post("/run-signatures")
+@router.post("/run-signatures", dependencies=[Depends(require_mutation_access)])
 def run_signature_benchmark():
     """
     Run classical and PQC signature benchmarks.
@@ -119,7 +121,7 @@ def run_signature_benchmark():
     }
 
 
-@router.post("/run-handshake")
+@router.post("/run-handshake", dependencies=[Depends(require_mutation_access)])
 def run_handshake_benchmark():
     """
     Run classical and hybrid handshake benchmarks.
