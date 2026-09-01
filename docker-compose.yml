@@ -1,54 +1,34 @@
-﻿services:
+services:
   hybrid-pki-api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: hybrid-pki-api
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./certs:/app/certs
       - ./logs:/app/logs
-      - ./docs:/app/docs
+      - ./docs:/app/docs:ro
     environment:
-      APP_NAME: "Hybrid-PKI-Lab"
       APP_ENV: "development"
-      API_HOST: "0.0.0.0"
-      API_PORT: "8000"
-      PKI_STORAGE_PATH: "/app/certs"
-      LOG_LEVEL: "INFO"
       HYBRID_PKI_DISABLE_OQS: "1"
-    command: uvicorn hybrid_pki.api.main:app --host 0.0.0.0 --port 8000 --reload
+      HYBRID_PKI_ENABLE_MUTATIONS: "${HYBRID_PKI_ENABLE_MUTATIONS:-0}"
+      HYBRID_PKI_API_KEY: "${HYBRID_PKI_API_KEY:-}"
+    command: uvicorn hybrid_pki.api.main:app --host 0.0.0.0 --port 8000
 
   hybrid-pki-tests:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: hybrid-pki-tests
     volumes:
       - .:/app
     environment:
       APP_ENV: "test"
-      PKI_STORAGE_PATH: "/app/certs"
       HYBRID_PKI_DISABLE_OQS: "1"
+      HYBRID_PKI_ENABLE_MUTATIONS: "1"
     command: pytest -v --cov=hybrid_pki --cov-report=term-missing
-    profiles:
-      - test
-
-  hybrid-pki-shell:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: hybrid-pki-shell
-    volumes:
-      - .:/app
-    environment:
-      APP_ENV: "development"
-      PKI_STORAGE_PATH: "/app/certs"
-      HYBRID_PKI_DISABLE_OQS: "1"
-    entrypoint: /bin/bash
-    profiles:
-      - shell
+    profiles: [test]
 
   hybrid-pki-pqc:
     build:
@@ -56,34 +36,28 @@
       dockerfile: Dockerfile.pqc
     container_name: hybrid-pki-pqc
     ports:
-      - "8001:8000"
+      - "127.0.0.1:8001:8000"
     volumes:
       - ./certs:/app/certs
       - ./logs:/app/logs
       - ./benchmarks/results:/app/benchmarks/results
     environment:
-      APP_NAME: "Hybrid-PKI-Lab"
       APP_ENV: "pqc"
-      API_HOST: "0.0.0.0"
-      API_PORT: "8000"
-      PKI_STORAGE_PATH: "/app/certs"
-      LOG_LEVEL: "INFO"
       HYBRID_PKI_DISABLE_OQS: "0"
+      HYBRID_PKI_ENABLE_MUTATIONS: "${HYBRID_PKI_ENABLE_MUTATIONS:-0}"
+      HYBRID_PKI_API_KEY: "${HYBRID_PKI_API_KEY:-}"
     command: uvicorn hybrid_pki.api.main:app --host 0.0.0.0 --port 8000
-    profiles:
-      - pqc
+    profiles: [pqc]
 
   hybrid-pki-pqc-tests:
     build:
       context: .
       dockerfile: Dockerfile.pqc
-    container_name: hybrid-pki-pqc-tests
     volumes:
       - .:/app
     environment:
       APP_ENV: "pqc-test"
-      PKI_STORAGE_PATH: "/app/certs"
       HYBRID_PKI_DISABLE_OQS: "0"
+      HYBRID_PKI_ENABLE_MUTATIONS: "1"
     command: pytest -v
-    profiles:
-      - pqc-test
+    profiles: [pqc-test]
