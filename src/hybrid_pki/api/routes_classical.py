@@ -132,7 +132,9 @@ def init_root_ca(request: RootCARequest):
     if ROOT_KEY_PATH.exists() or ROOT_CERT_PATH.exists():
         raise HTTPException(
             status_code=409,
-            detail="Root CA already exists; remove it explicitly before reinitializing.",
+            detail=(
+                "Root CA already exists; remove it explicitly before " "reinitializing."
+            ),
         )
 
     ROOT_DIR.mkdir(parents=True, exist_ok=True)
@@ -242,7 +244,9 @@ def init_intermediate_ca(request: IntermediateCARequest):
     }
 
 
-@router.post("/certificates/server/issue", dependencies=[Depends(require_mutation_access)])
+@router.post(
+    "/certificates/server/issue", dependencies=[Depends(require_mutation_access)]
+)
 def issue_classical_server_certificate(request: ServerCertificateRequest):
     """
     Issue a classical server certificate signed by the Intermediate CA.
@@ -333,7 +337,9 @@ def verify_classical_server_certificate(request: VerifyCertificateRequest):
     certificate_path = Path(request.certificate_path).resolve()
     issued_root = ISSUED_DIR.resolve()
     if issued_root not in certificate_path.parents:
-        raise HTTPException(status_code=400, detail="Certificate path must be inside certs/issued")
+        raise HTTPException(
+            status_code=400, detail="Certificate path must be inside certs/issued"
+        )
 
     ensure_file_exists(certificate_path, "Server certificate")
     ensure_file_exists(INTERMEDIATE_CERT_PATH, "Intermediate CA certificate")
@@ -377,7 +383,9 @@ def verify_classical_server_certificate(request: VerifyCertificateRequest):
     }
 
 
-@router.post("/certificates/server/revoke", dependencies=[Depends(require_mutation_access)])
+@router.post(
+    "/certificates/server/revoke", dependencies=[Depends(require_mutation_access)]
+)
 def revoke_classical_server_certificate(request: RevokeCertificateRequest):
     """
     Revoke a classical server certificate.
@@ -385,7 +393,9 @@ def revoke_classical_server_certificate(request: RevokeCertificateRequest):
     certificate_path = Path(request.certificate_path).resolve()
     issued_root = ISSUED_DIR.resolve()
     if issued_root not in certificate_path.parents:
-        raise HTTPException(status_code=400, detail="Certificate path must be inside certs/issued")
+        raise HTTPException(
+            status_code=400, detail="Certificate path must be inside certs/issued"
+        )
 
     ensure_file_exists(certificate_path, "Server certificate")
 
