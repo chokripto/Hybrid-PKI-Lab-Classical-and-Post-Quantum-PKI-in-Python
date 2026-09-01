@@ -382,7 +382,10 @@ def revoke_classical_server_certificate(request: RevokeCertificateRequest):
     """
     Revoke a classical server certificate.
     """
-    certificate_path = Path(request.certificate_path)
+    certificate_path = Path(request.certificate_path).resolve()
+    issued_root = ISSUED_DIR.resolve()
+    if issued_root not in certificate_path.parents:
+        raise HTTPException(status_code=400, detail="Certificate path must be inside certs/issued")
 
     ensure_file_exists(certificate_path, "Server certificate")
 
