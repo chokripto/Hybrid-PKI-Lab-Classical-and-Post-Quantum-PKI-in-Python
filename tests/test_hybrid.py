@@ -116,7 +116,6 @@ def test_hybrid_handshake_with_oqs():
     assert server_secret == client_result.hybrid_secret
 
 
-
 def test_hybrid_certificate_rejects_excessive_validity():
     classical_key = generate_ecdsa_private_key()
     with pytest.raises(ValueError, match="days_valid"):
