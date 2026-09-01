@@ -1,49 +1,43 @@
-FROM python:3.12-slim
+FROM python:3.12.8-slim-bookworm
 
+ARG LIBOQS_REF=0.12.0
+ARG LIBOQS_PYTHON_REF=0.12.0
+
+LABEL maintainer="Dr. Chokri NOUAR"
 LABEL project="Hybrid-PKI-Lab"
-LABEL description="Hybrid PKI Lab with liboqs and liboqs-python"
-LABEL maintainer="Chokri"
+LABEL description="Pinned real-PQC environment for the educational lab"
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PIP_NO_CACHE_DIR=1
-ENV APP_HOME=/app
-ENV OQS_INSTALL_PATH=/usr/local
-ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    APP_HOME=/app \
+    OQS_INSTALL_PATH=/usr/local \
+    LD_LIBRARY_PATH=/usr/local/lib \
+    HYBRID_PKI_DISABLE_OQS=0
 
 WORKDIR ${APP_HOME}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    cmake \
-    ninja-build \
-    build-essential \
-    pkg-config \
-    libssl-dev \
-    ca-certificates \
-    curl \
-    python3-dev \
+    git cmake ninja-build build-essential pkg-config libssl-dev ca-certificates python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth 1 https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs \
-    && cmake -S /tmp/liboqs -B /tmp/liboqs/build \
-        -GNinja \
+RUN git clone --depth 1 --branch "${LIBOQS_REF}" \
+        https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs \
+    && cmake -S /tmp/liboqs -B /tmp/liboqs/build -GNinja \
         -DCMAKE_INSTALL_PREFIX=/usr/local \
         -DBUILD_SHARED_LIBS=ON \
         -DOQS_BUILD_ONLY_LIB=ON \
         -DOQS_USE_OPENSSL=ON \
-    && cmake --build /tmp/liboqs/build \
+    && cmake --build /tmp/liboqs/build --parallel 2 \
     && cmake --install /tmp/liboqs/build \
     && ldconfig \
     && rm -rf /tmp/liboqs
 
-COPY requirements.txt .
-COPY pyproject.toml .
-COPY README.md .
-
+COPY requirements.txt pyproject.toml README.md ./
 RUN python -m pip install --upgrade pip setuptools wheel \
     && pip install -r requirements.txt \
-    && pip install liboqs-python
+    && pip install "git+https://github.com/open-quantum-safe/liboqs-python.git@${LIBOQS_PYTHON_REF}" \
+    && pip install .
 
 COPY src ./src
 COPY tests ./tests
@@ -52,19 +46,13 @@ COPY examples ./examples
 COPY docs ./docs
 COPY scripts ./scripts
 
-RUN pip install -e .
+RUN groupadd --system hybridpki \
+    && useradd --system --gid hybridpki --home-dir /app hybridpki \
+    && mkdir -p certs/root certs/intermediate certs/issued certs/revoked certs/hybrid benchmarks/results logs \
+    && chown -R hybridpki:hybridpki /app \
+    && python -c "import oqs; print('Pinned liboqs-python loaded successfully')"
 
-RUN mkdir -p \
-    certs/root \
-    certs/intermediate \
-    certs/issued \
-    certs/revoked \
-    certs/hybrid \
-    benchmarks/results \
-    logs
-
-RUN python -c "import oqs; print('liboqs-python loaded successfully')"
+USER hybridpki
 
 EXPOSE 8000
-
 CMD ["python", "-m", "uvicorn", "hybrid_pki.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
